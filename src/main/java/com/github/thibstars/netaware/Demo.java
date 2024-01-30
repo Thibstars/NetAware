@@ -23,7 +23,7 @@ public class Demo {
         System.out.println("\n===================================================\n");
         System.out.println("Scanning " + amountOfIpsToScan + " IPs...");
 
-        ConcurrentSkipListMap<String, HashSet<Integer>> ipsWithOpenPorts = new ConcurrentSkipListMap<>();
+        ConcurrentSkipListMap<String, Set<Integer>> ipsWithOpenPorts = new ConcurrentSkipListMap<>();
 
         ipsInNetwork.forEach(ip -> {
             System.out.println("Found IP: " + ip);
