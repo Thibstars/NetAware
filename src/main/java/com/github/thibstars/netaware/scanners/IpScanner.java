@@ -8,11 +8,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thibault Helsmoortel
  */
 public class IpScanner implements Scanner<IpScannerInput, String> {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(IpScanner.class);
 
     private static final int TIMEOUT = 500;
     private static final long SERVICE_TIME = 1L; // 1 ms should be enough just to add an IP to a set
@@ -22,7 +26,7 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
     public IpScanner() {
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
-        System.out.println("IpScanner is allocating " + optimalAmountOfThreads + " threads.");
+        LOGGER.info("IpScanner is allocating {} threads.", optimalAmountOfThreads);
     }
 
     @Override
@@ -30,7 +34,7 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
         ConcurrentSkipListSet<String> ipsSet;
 
         int actualThreadsToUse = Math.min(ipScannerInput.amountOfIpsToScan(), optimalAmountOfThreads);
-        System.out.println("We need to scan " + ipScannerInput.amountOfIpsToScan() + " ips, actually using " + actualThreadsToUse + " threads.");
+        LOGGER.info("We need to scan {} ips, actually using {} threads.", ipScannerInput.amountOfIpsToScan(), actualThreadsToUse);
 
         try (ExecutorService executorService = Executors.newFixedThreadPool(actualThreadsToUse)) {
             final String networkId = ipScannerInput.firstIpInTheNetwork().substring(0, ipScannerInput.firstIpInTheNetwork().length() - 1);
@@ -46,7 +50,7 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
                             ipsSet.add(ip);
                         }
                     } catch (IOException e) {
-                        System.out.println(e.getMessage());
+                        LOGGER.error(e.getMessage(), e);
                     }
                 });
             }
@@ -54,7 +58,7 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
             try {
                 executorService.awaitTermination(1, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
+                LOGGER.error(e.getMessage(), e);
             }
         }
 

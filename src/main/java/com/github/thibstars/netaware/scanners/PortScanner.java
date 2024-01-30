@@ -11,11 +11,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thibault Helsmoortel
  */
 public class PortScanner implements Scanner<String, Integer> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PortScanner.class);
 
     private static final int TIMEOUT = 200;
     private static final long SERVICE_TIME = 10L; // 10 ms should be enough just to connect to and add a port to a set
@@ -27,7 +31,7 @@ public class PortScanner implements Scanner<String, Integer> {
     public PortScanner() {
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
-        System.out.println("PortScanner is allocating " + optimalAmountOfThreads + " threads.");
+        LOGGER.info("PortScanner is allocating {} threads.", optimalAmountOfThreads);
     }
 
     @Override
@@ -52,7 +56,7 @@ public class PortScanner implements Scanner<String, Integer> {
             try {
                 executorService.awaitTermination(10, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
+                LOGGER.error(e.getMessage(), e);
             }
         }
 

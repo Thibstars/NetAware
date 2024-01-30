@@ -8,11 +8,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thibault Helsmoortel
  */
 public class Demo {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Demo.class);
 
     public static void main(String[] args) {
         IpScanner ipScanner = new IpScanner();
@@ -20,27 +24,27 @@ public class Demo {
 
         int amountOfIpsToScan = 254;
         ConcurrentSkipListSet<String> ipsInNetwork = ipScanner.scan(new IpScannerInput("192.168.1.0", amountOfIpsToScan));
-        System.out.println("\n===================================================\n");
-        System.out.println("Scanning " + amountOfIpsToScan + " IPs...");
+        LOGGER.info("\n===================================================\n");
+        LOGGER.info("Scanning {} IPs...", amountOfIpsToScan);
 
         ConcurrentSkipListMap<String, Set<Integer>> ipsWithOpenPorts = new ConcurrentSkipListMap<>();
 
         ipsInNetwork.forEach(ip -> {
-            System.out.println("Found IP: " + ip);
+            LOGGER.info("Found IP: {}", ip);
             ipsWithOpenPorts.put(ip, new HashSet<>());
         });
 
         ipsWithOpenPorts.forEach((ip, ports) -> {
             Set<Integer> openPorts = portScanner.scan(ip);
             ports.addAll(openPorts);
-            System.out.println("Open ports for IP " + ip + ": " + openPorts.stream().map(String::valueOf).collect(Collectors.joining(", ")));
+            LOGGER.info("Open ports for IP {}: {}", ip, openPorts.stream().map(String::valueOf).collect(Collectors.joining(", ")));
         });
 
-        System.out.println("Finished scanning!");
-        System.out.println("\n===================================================\n");
+        LOGGER.info("Finished scanning!");
+        LOGGER.info("\n===================================================\n");
 
-        System.out.println("Found " + ipsWithOpenPorts.size() + " IPs:");
-        ipsWithOpenPorts.forEach((ip, ports) -> System.out.println("IP: " + ip + " Open ports: " + ports.stream().map(String::valueOf).collect(Collectors.joining(", "))));
+        LOGGER.info("Found {} IPs:", ipsWithOpenPorts.size());
+        ipsWithOpenPorts.forEach((ip, ports) -> LOGGER.info("IP: {} Open ports: {}", ip, ports.stream().map(String::valueOf).collect(Collectors.joining(", "))));
     }
 
 }
