@@ -1,4 +1,4 @@
-package com.github.thibstars.netaware;
+package com.github.thibstars.netaware.scanners;
 
 /**
  * @author Thibault Helsmoortel

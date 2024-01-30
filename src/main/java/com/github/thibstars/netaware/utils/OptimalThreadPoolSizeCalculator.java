@@ -1,10 +1,10 @@
-package com.github.thibstars.netaware;
+package com.github.thibstars.netaware.utils;
 
 
 /**
  * @author Thibault Helsmoortel
  */
-class OptimalThreadPoolSizeCalculator {
+public class OptimalThreadPoolSizeCalculator {
 
     private static final double MAX_TARGET_CPU_UTILISATION = 1.0;
     private static final double MIN_TARGET_CPU_UTILISATION = 0.1;
@@ -13,7 +13,7 @@ class OptimalThreadPoolSizeCalculator {
         return get(MAX_TARGET_CPU_UTILISATION, waitTime, serviceTime);
     }
 
-    int get(double targetCpuUtilisation, long waitTime, long serviceTime) {
+    public int get(double targetCpuUtilisation, long waitTime, long serviceTime) {
         int availableCores = Runtime.getRuntime().availableProcessors();
 
         if (targetCpuUtilisation < MIN_TARGET_CPU_UTILISATION || targetCpuUtilisation > MAX_TARGET_CPU_UTILISATION) {

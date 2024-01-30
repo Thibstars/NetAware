@@ -1,4 +1,4 @@
-package com.github.thibstars.netaware;
+package com.github.thibstars.netaware.scanners;
 
 import java.util.Collection;
 

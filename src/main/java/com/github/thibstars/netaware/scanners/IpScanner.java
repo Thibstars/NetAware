@@ -1,5 +1,6 @@
-package com.github.thibstars.netaware;
+package com.github.thibstars.netaware.scanners;
 
+import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.ConcurrentSkipListSet;

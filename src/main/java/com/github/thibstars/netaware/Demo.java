@@ -1,5 +1,8 @@
 package com.github.thibstars.netaware;
 
+import com.github.thibstars.netaware.scanners.IpScanner;
+import com.github.thibstars.netaware.scanners.IpScannerInput;
+import com.github.thibstars.netaware.scanners.PortScanner;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
