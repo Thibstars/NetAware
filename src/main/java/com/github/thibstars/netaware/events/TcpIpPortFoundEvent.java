@@ -5,17 +5,15 @@ import com.github.thibstars.netaware.scanners.PortScanner;
 /**
  * @author Thibault Helsmoortel
  */
-public class TcpIpPortFoundEvent extends Event {
+public class TcpIpPortFoundEvent extends PortScannerEvent {
 
-    private String ipAddress;
-    private Integer tcpIpPort;
+    private final String ipAddress;
+    private final Integer tcpIpPort;
 
-    public TcpIpPortFoundEvent(PortScanner scanner) {
-        super(scanner);
-    }
-
-    public void setIpAddress(String ipAddress) {
+    public TcpIpPortFoundEvent(PortScanner source, String ipAddress, Integer tcpIpPort) {
+        super(source);
         this.ipAddress = ipAddress;
+        this.tcpIpPort = tcpIpPort;
     }
 
     public String getIpAddress() {
@@ -24,9 +22,5 @@ public class TcpIpPortFoundEvent extends Event {
 
     public Integer getTcpIpPort() {
         return tcpIpPort;
-    }
-
-    public void setTcpIpPort(Integer tcpIpPort) {
-        this.tcpIpPort = tcpIpPort;
     }
 }

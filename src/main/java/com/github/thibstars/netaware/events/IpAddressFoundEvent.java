@@ -5,19 +5,16 @@ import com.github.thibstars.netaware.scanners.IpScanner;
 /**
  * @author Thibault Helsmoortel
  */
-public class IpAddressFoundEvent extends Event {
+public class IpAddressFoundEvent extends IpScannerEvent {
 
-    private String ipAddress;
+    private final String ipAddress;
 
-    public IpAddressFoundEvent(IpScanner scanner) {
-        super(scanner);
+    public IpAddressFoundEvent(IpScanner source, String ipAddress) {
+        super(source);
+        this.ipAddress = ipAddress;
     }
 
     public String getIpAddress() {
         return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
     }
 }

@@ -2,6 +2,7 @@ package com.github.thibstars.netaware.scanners;
 
 import com.github.thibstars.netaware.events.Event;
 import com.github.thibstars.netaware.events.EventListener;
+import com.github.thibstars.netaware.events.PortScannerEvent;
 import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
@@ -9,7 +10,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,13 +25,13 @@ public class PortScanner implements Scanner<String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PortScanner.class);
 
     private static final int TIMEOUT = 200;
-    private static final long SERVICE_TIME = 10L; // 10 ms should be enough just to connect to and add a port to a set
+    private static final long SERVICE_TIME = 10L; // 10 ms should be enough just to connect to a port
     public static final double TARGET_CPU_UTILISATION = 0.9;
     private static final int MAXIMUM_IPV4_TCP_IP_PORT_NUMBER = 65535;
 
     private final int optimalAmountOfThreads;
 
-    private final Set<EventListener<Event>> EVENT_LISTENERS = new HashSet<>();
+    private final Set<EventListener<Event>> eventListeners = new HashSet<>();
 
     public PortScanner() {
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
@@ -41,7 +41,6 @@ public class PortScanner implements Scanner<String> {
 
     @Override
     public void scan(String ip) {
-        ConcurrentLinkedQueue<Integer> openPorts = new ConcurrentLinkedQueue<>();
         try (ExecutorService executorService = Executors.newFixedThreadPool(optimalAmountOfThreads)) {
             AtomicInteger port = new AtomicInteger(0);
             while (port.get() < MAXIMUM_IPV4_TCP_IP_PORT_NUMBER) {
@@ -51,7 +50,6 @@ public class PortScanner implements Scanner<String> {
                         Socket socket = new Socket();
                         socket.connect(new InetSocketAddress(ip, currentPort), TIMEOUT);
                         socket.close();
-                        openPorts.add(currentPort);
                         createAndFireTcpIpPortFoundEvent(this, ip, currentPort);
                     } catch (IOException e) {
                         // Do nothing, we can't connect, so we are not interested in the port
@@ -65,28 +63,21 @@ public class PortScanner implements Scanner<String> {
                 LOGGER.error(e.getMessage(), e);
             }
         }
-
-        Set<Integer> openPortList = new HashSet<>();
-        while (!openPorts.isEmpty()) {
-            openPortList.add(openPorts.poll());
-        }
     }
 
     @Override
     public void addEventListener(EventListener<Event> eventListener) {
-        this.EVENT_LISTENERS.add(eventListener);
+        this.eventListeners.add(eventListener);
     }
 
     @Override
     public void removeEventListener(EventListener<Event> eventListener) {
-        this.EVENT_LISTENERS.remove(eventListener);
+        this.eventListeners.remove(eventListener);
     }
 
     public void createAndFireTcpIpPortFoundEvent(PortScanner portScanner, String ip, Integer tcpIpPort) {
-        TcpIpPortFoundEvent tcpIpPortFoundEvent = new TcpIpPortFoundEvent(portScanner);
-        tcpIpPortFoundEvent.setIpAddress(ip);
-        tcpIpPortFoundEvent.setTcpIpPort(tcpIpPort);
-        EVENT_LISTENERS.forEach(tcpIpPortFoundEvent::addListener);
+        TcpIpPortFoundEvent tcpIpPortFoundEvent = new TcpIpPortFoundEvent(portScanner, ip, tcpIpPort);
+        eventListeners.forEach(tcpIpPortFoundEvent::addListener);
         tcpIpPortFoundEvent.fire();
     }
 
