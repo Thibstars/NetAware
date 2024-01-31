@@ -45,7 +45,7 @@ public class Demo {
         LOGGER.info("\n=============================================================\n");
         ipScanner.scan(new IpScannerInput("192.168.1.0", amountOfIpsToScan));
         LOGGER.info("\n=============================================================\n");
-        LOGGER.info("SUMMARY (<IP>: <Ports>");
+        LOGGER.info("SUMMARY (<IP>: <Ports>)");
         ipAddressesWithOpenPorts.forEach(
                 (ipAddress, openPorts) -> LOGGER.info(
                         "{}: {}",
