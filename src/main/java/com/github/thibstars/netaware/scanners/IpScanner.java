@@ -1,8 +1,13 @@
 package com.github.thibstars.netaware.scanners;
 
+import com.github.thibstars.netaware.events.Event;
+import com.github.thibstars.netaware.events.EventListener;
+import com.github.thibstars.netaware.events.IpAddressFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thibault Helsmoortel
  */
-public class IpScanner implements Scanner<IpScannerInput, String> {
+public class IpScanner implements Scanner<IpScannerInput> {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(IpScanner.class);
 
@@ -23,6 +28,8 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
     public static final double TARGET_CPU_UTILISATION = 0.9;
     private final int optimalAmountOfThreads;
 
+    private final Set<EventListener<Event>> EVENT_LISTENERS = new HashSet<>();
+
     public IpScanner() {
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
@@ -30,15 +37,14 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
     }
 
     @Override
-    public ConcurrentSkipListSet<String> scan(IpScannerInput ipScannerInput) {
-        ConcurrentSkipListSet<String> ipsSet;
+    public void scan(IpScannerInput ipScannerInput) {
 
         int actualThreadsToUse = Math.min(ipScannerInput.amountOfIpsToScan(), optimalAmountOfThreads);
         LOGGER.info("We need to scan {} ips, actually using {} threads.", ipScannerInput.amountOfIpsToScan(), actualThreadsToUse);
 
         try (ExecutorService executorService = Executors.newFixedThreadPool(actualThreadsToUse)) {
             final String networkId = ipScannerInput.firstIpInTheNetwork().substring(0, ipScannerInput.firstIpInTheNetwork().length() - 1);
-            ipsSet = new ConcurrentSkipListSet<>();
+            ConcurrentSkipListSet<String> ipsSet = new ConcurrentSkipListSet<>();
 
             AtomicInteger ips = new AtomicInteger(0);
             while (ips.get() <= ipScannerInput.amountOfIpsToScan()) {
@@ -48,6 +54,7 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
                         InetAddress inAddress = InetAddress.getByName(ip);
                         if (inAddress.isReachable(TIMEOUT)) {
                             ipsSet.add(ip);
+                            createAndFireIpAddressFoundEvent(ip);
                         }
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
@@ -61,7 +68,23 @@ public class IpScanner implements Scanner<IpScannerInput, String> {
                 LOGGER.error(e.getMessage(), e);
             }
         }
-
-        return ipsSet;
     }
+
+    @Override
+    public void addEventListener(EventListener<Event> eventListener) {
+        this.EVENT_LISTENERS.add(eventListener);
+    }
+
+    @Override
+    public void removeEventListener(EventListener<Event> eventListener) {
+        this.EVENT_LISTENERS.remove(eventListener);
+    }
+
+    public void createAndFireIpAddressFoundEvent(String ipAddress) {
+        IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this);
+        ipAddressFoundEvent.setIpAddress(ipAddress);
+        EVENT_LISTENERS.forEach(ipAddressFoundEvent::addListener);
+        ipAddressFoundEvent.fire();
+    }
+
 }

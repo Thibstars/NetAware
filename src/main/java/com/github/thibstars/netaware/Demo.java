@@ -1,12 +1,13 @@
 package com.github.thibstars.netaware;
 
+import com.github.thibstars.netaware.events.IpAddressFoundEvent;
+import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.scanners.IpScanner;
 import com.github.thibstars.netaware.scanners.IpScannerInput;
 import com.github.thibstars.netaware.scanners.PortScanner;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,30 +22,39 @@ public class Demo {
     public static void main(String[] args) {
         IpScanner ipScanner = new IpScanner();
         PortScanner portScanner = new PortScanner();
+        HashMap<String, Set<Integer>> ipAddressesWithOpenPorts = new HashMap<>();
+        portScanner.addEventListener(event -> {
+            if (event instanceof TcpIpPortFoundEvent tcpIpPortFoundEvent) {
+                String ipAddress = tcpIpPortFoundEvent.getIpAddress();
+                Integer tcpIpPort = tcpIpPortFoundEvent.getTcpIpPort();
+                LOGGER.info("Found open TCP/IP port '{}' on IP address '{}'.", tcpIpPort, ipAddress);
+                ipAddressesWithOpenPorts.get(ipAddress).add(tcpIpPort);
+            }
+        });
+        ipScanner.addEventListener(event -> {
+            if (event instanceof IpAddressFoundEvent ipAddressFoundEvent) {
+                String ipAddress = ipAddressFoundEvent.getIpAddress();
+                LOGGER.info("Found IP address '{}', will scan for open TCP/IP ports.", ipAddress);
+                ipAddressesWithOpenPorts.put(ipAddress, new HashSet<>());
+                portScanner.scan(ipAddress);
+            }
+        });
 
         int amountOfIpsToScan = 254;
-        ConcurrentSkipListSet<String> ipsInNetwork = ipScanner.scan(new IpScannerInput("192.168.1.0", amountOfIpsToScan));
-        LOGGER.info("\n===================================================\n");
         LOGGER.info("Scanning {} IPs...", amountOfIpsToScan);
-
-        ConcurrentSkipListMap<String, Set<Integer>> ipsWithOpenPorts = new ConcurrentSkipListMap<>();
-
-        ipsInNetwork.forEach(ip -> {
-            LOGGER.info("Found IP: {}", ip);
-            ipsWithOpenPorts.put(ip, new HashSet<>());
-        });
-
-        ipsWithOpenPorts.forEach((ip, ports) -> {
-            Set<Integer> openPorts = portScanner.scan(ip);
-            ports.addAll(openPorts);
-            LOGGER.info("Open ports for IP {}: {}", ip, openPorts.stream().map(String::valueOf).collect(Collectors.joining(", ")));
-        });
-
-        LOGGER.info("Finished scanning!");
-        LOGGER.info("\n===================================================\n");
-
-        LOGGER.info("Found {} IPs:", ipsWithOpenPorts.size());
-        ipsWithOpenPorts.forEach((ip, ports) -> LOGGER.info("IP: {} Open ports: {}", ip, ports.stream().map(String::valueOf).collect(Collectors.joining(", "))));
+        LOGGER.info("\n=============================================================\n");
+        ipScanner.scan(new IpScannerInput("192.168.1.0", amountOfIpsToScan));
+        LOGGER.info("\n=============================================================\n");
+        LOGGER.info("SUMMARY (<IP>: <Ports>");
+        ipAddressesWithOpenPorts.forEach(
+                (ipAddress, openPorts) -> LOGGER.info(
+                        "{}: {}",
+                        ipAddress,
+                        openPorts.stream()
+                                .map(String::valueOf)
+                                .collect(Collectors.joining(", "))
+                )
+        );
     }
 
 }

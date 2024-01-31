@@ -1,5 +1,8 @@
 package com.github.thibstars.netaware.scanners;
 
+import com.github.thibstars.netaware.events.Event;
+import com.github.thibstars.netaware.events.EventListener;
+import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,7 +20,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thibault Helsmoortel
  */
-public class PortScanner implements Scanner<String, Integer> {
+public class PortScanner implements Scanner<String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PortScanner.class);
 
@@ -28,6 +31,8 @@ public class PortScanner implements Scanner<String, Integer> {
 
     private final int optimalAmountOfThreads;
 
+    private final Set<EventListener<Event>> EVENT_LISTENERS = new HashSet<>();
+
     public PortScanner() {
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
@@ -35,7 +40,7 @@ public class PortScanner implements Scanner<String, Integer> {
     }
 
     @Override
-    public Set<Integer> scan(String ip) {
+    public void scan(String ip) {
         ConcurrentLinkedQueue<Integer> openPorts = new ConcurrentLinkedQueue<>();
         try (ExecutorService executorService = Executors.newFixedThreadPool(optimalAmountOfThreads)) {
             AtomicInteger port = new AtomicInteger(0);
@@ -47,6 +52,7 @@ public class PortScanner implements Scanner<String, Integer> {
                         socket.connect(new InetSocketAddress(ip, currentPort), TIMEOUT);
                         socket.close();
                         openPorts.add(currentPort);
+                        createAndFireTcpIpPortFoundEvent(this, ip, currentPort);
                     } catch (IOException e) {
                         // Do nothing, we can't connect, so we are not interested in the port
                     }
@@ -64,8 +70,24 @@ public class PortScanner implements Scanner<String, Integer> {
         while (!openPorts.isEmpty()) {
             openPortList.add(openPorts.poll());
         }
+    }
 
-        return openPortList;
+    @Override
+    public void addEventListener(EventListener<Event> eventListener) {
+        this.EVENT_LISTENERS.add(eventListener);
+    }
+
+    @Override
+    public void removeEventListener(EventListener<Event> eventListener) {
+        this.EVENT_LISTENERS.remove(eventListener);
+    }
+
+    public void createAndFireTcpIpPortFoundEvent(PortScanner portScanner, String ip, Integer tcpIpPort) {
+        TcpIpPortFoundEvent tcpIpPortFoundEvent = new TcpIpPortFoundEvent(portScanner);
+        tcpIpPortFoundEvent.setIpAddress(ip);
+        tcpIpPortFoundEvent.setTcpIpPort(tcpIpPort);
+        EVENT_LISTENERS.forEach(tcpIpPortFoundEvent::addListener);
+        tcpIpPortFoundEvent.fire();
     }
 
 }
