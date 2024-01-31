@@ -3,7 +3,6 @@ package com.github.thibstars.netaware.scanners;
 import com.github.thibstars.netaware.events.Event;
 import com.github.thibstars.netaware.events.EventListener;
 import com.github.thibstars.netaware.events.IpAddressFoundEvent;
-import com.github.thibstars.netaware.events.IpScannerEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
 import java.net.InetAddress;

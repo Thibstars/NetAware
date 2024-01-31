@@ -2,7 +2,6 @@ package com.github.thibstars.netaware.scanners;
 
 import com.github.thibstars.netaware.events.Event;
 import com.github.thibstars.netaware.events.EventListener;
-import com.github.thibstars.netaware.events.PortScannerEvent;
 import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
