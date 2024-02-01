@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thibault Helsmoortel
  */
-public class MacScanner implements Scanner<String> {
+public class MacScanner implements Scanner<InetAddress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MacScanner.class);
 
@@ -21,9 +21,9 @@ public class MacScanner implements Scanner<String> {
     }
 
     @Override
-    public void scan(String ip) {
+    public void scan(InetAddress ip) {
         try {
-            NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(ip));
+            NetworkInterface networkInterface = NetworkInterface.getByInetAddress(ip);
             if (networkInterface != null) {
                 String macAddress = getMacAddressFromBytes(networkInterface.getHardwareAddress());
 

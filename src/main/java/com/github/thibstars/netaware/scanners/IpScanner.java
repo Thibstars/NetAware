@@ -47,9 +47,9 @@ public class IpScanner implements Scanner<IpScannerInput> {
                 String ip = networkId + ips.getAndIncrement();
                 executorService.submit(() -> {
                     try {
-                        InetAddress inAddress = InetAddress.getByName(ip);
-                        if (inAddress.isReachable(TIMEOUT)) {
-                            IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this, ip);
+                        InetAddress ipAddress = InetAddress.getByName(ip);
+                        if (ipAddress.isReachable(TIMEOUT)) {
+                            IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this, ipAddress);
                             eventManager.dispatch(ipAddressFoundEvent);
                         }
                     } catch (IOException e) {

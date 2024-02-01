@@ -8,6 +8,7 @@ import com.github.thibstars.netaware.scanners.IpScanner;
 import com.github.thibstars.netaware.scanners.IpScannerInput;
 import com.github.thibstars.netaware.scanners.MacScanner;
 import com.github.thibstars.netaware.scanners.PortScanner;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,28 +29,28 @@ public class Demo {
         PortScanner portScanner = new PortScanner(eventManager);
         MacScanner macScanner = new MacScanner(eventManager);
 
-        HashMap<String, Set<Integer>> ipAddressesWithOpenPorts = new HashMap<>();
+        HashMap<InetAddress, Set<Integer>> ipAddressesWithOpenPorts = new HashMap<>();
         eventManager.registerHandler(TcpIpPortFoundEvent.class, event -> {
             if (event instanceof TcpIpPortFoundEvent tcpIpPortFoundEvent) {
-                String ipAddress = tcpIpPortFoundEvent.getIpAddress();
+                InetAddress ipAddress = tcpIpPortFoundEvent.getIpAddress();
                 Integer tcpIpPort = tcpIpPortFoundEvent.getTcpIpPort();
-                LOGGER.info("Found open TCP/IP port '{}' on IP address '{}'.", tcpIpPort, ipAddress);
+                LOGGER.info("Found open TCP/IP port '{}' on IP address '{}'.", tcpIpPort, ipAddress.getHostAddress());
                 ipAddressesWithOpenPorts.get(ipAddress).add(tcpIpPort);
             }
         });
-        HashMap<String, String> ipAddressesWithMacAddress = new HashMap<>();
+        HashMap<InetAddress, String> ipAddressesWithMacAddress = new HashMap<>();
         eventManager.registerHandler(MacFoundEvent.class, event -> {
             if (event instanceof MacFoundEvent macFoundEvent) {
-                String ipAddress = macFoundEvent.getIpAddress();
+                InetAddress ipAddress = macFoundEvent.getIpAddress();
                 String macAddress = macFoundEvent.getMacAddress();
-                LOGGER.info("Found MAC address '{}' on IP address '{}'.", macAddress, ipAddress);
+                LOGGER.info("Found MAC address '{}' on IP address '{}'.", macAddress, ipAddress.getHostAddress());
                 ipAddressesWithMacAddress.replace(ipAddress, macAddress);
             }
         });
         eventManager.registerHandler(IpAddressFoundEvent.class, event -> {
             if (event instanceof IpAddressFoundEvent ipAddressFoundEvent) {
-                String ipAddress = ipAddressFoundEvent.getIpAddress();
-                LOGGER.info("Found IP address '{}', will scan for open TCP/IP ports.", ipAddress);
+                InetAddress ipAddress = ipAddressFoundEvent.getIpAddress();
+                LOGGER.info("Found IP address '{}', will scan for open TCP/IP ports.", ipAddress.getHostAddress());
                 ipAddressesWithOpenPorts.put(ipAddress, new HashSet<>());
                 ipAddressesWithMacAddress.put(ipAddress, null);
                 portScanner.scan(ipAddress);
@@ -67,7 +68,7 @@ public class Demo {
         ipAddressesWithOpenPorts.forEach(
                 (ipAddress, openPorts) -> LOGGER.info(
                         "{}: {}",
-                        ipAddress,
+                        ipAddress.getHostAddress(),
                         openPorts.stream()
                                 .map(String::valueOf)
                                 .collect(Collectors.joining(", "))
@@ -79,7 +80,7 @@ public class Demo {
                     if (macAddress != null) {
                         LOGGER.info(
                                 "{}: {}",
-                                ipAddress,
+                                ipAddress.getHostAddress(),
                                 macAddress
                         );
                     }

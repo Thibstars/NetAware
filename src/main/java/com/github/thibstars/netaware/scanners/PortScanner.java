@@ -4,6 +4,7 @@ import com.github.thibstars.netaware.events.core.EventManager;
 import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thibault Helsmoortel
  */
-public class PortScanner implements Scanner<String> {
+public class PortScanner implements Scanner<InetAddress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PortScanner.class);
 
@@ -37,7 +38,7 @@ public class PortScanner implements Scanner<String> {
     }
 
     @Override
-    public void scan(String ip) {
+    public void scan(InetAddress ip) {
         try (ExecutorService executorService = Executors.newFixedThreadPool(optimalAmountOfThreads)) {
             AtomicInteger port = new AtomicInteger(0);
             while (port.get() < MAXIMUM_IPV4_TCP_IP_PORT_NUMBER) {
