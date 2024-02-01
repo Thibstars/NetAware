@@ -30,7 +30,7 @@ public class PortScanner implements Scanner<String> {
     private final EventManager eventManager;
 
     public PortScanner(EventManager eventManager) {
-        this.eventManager = eventManager;
+        this.eventManager = eventManager != null ? eventManager : new EventManager();
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
         LOGGER.info("PortScanner is allocating {} threads.", optimalAmountOfThreads);
@@ -47,7 +47,8 @@ public class PortScanner implements Scanner<String> {
                         Socket socket = new Socket();
                         socket.connect(new InetSocketAddress(ip, currentPort), TIMEOUT);
                         socket.close();
-                        createAndFireTcpIpPortFoundEvent(this, ip, currentPort);
+                        TcpIpPortFoundEvent tcpIpPortFoundEvent = new TcpIpPortFoundEvent(this, ip, currentPort);
+                        eventManager.dispatch(tcpIpPortFoundEvent);
                     } catch (IOException e) {
                         // Do nothing, we can't connect, so we are not interested in the port
                     }
@@ -60,11 +61,6 @@ public class PortScanner implements Scanner<String> {
                 LOGGER.error(e.getMessage(), e);
             }
         }
-    }
-
-    public void createAndFireTcpIpPortFoundEvent(PortScanner portScanner, String ip, Integer tcpIpPort) {
-        TcpIpPortFoundEvent tcpIpPortFoundEvent = new TcpIpPortFoundEvent(portScanner, ip, tcpIpPort);
-        eventManager.dispatch(tcpIpPortFoundEvent);
     }
 
 }

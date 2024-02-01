@@ -1,10 +1,12 @@
 package com.github.thibstars.netaware;
 
+import com.github.thibstars.netaware.events.MacFoundEvent;
 import com.github.thibstars.netaware.events.core.EventManager;
 import com.github.thibstars.netaware.events.IpAddressFoundEvent;
 import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.scanners.IpScanner;
 import com.github.thibstars.netaware.scanners.IpScannerInput;
+import com.github.thibstars.netaware.scanners.MacScanner;
 import com.github.thibstars.netaware.scanners.PortScanner;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +26,8 @@ public class Demo {
         EventManager eventManager = new EventManager();
         IpScanner ipScanner = new IpScanner(eventManager);
         PortScanner portScanner = new PortScanner(eventManager);
+        MacScanner macScanner = new MacScanner(eventManager);
+
         HashMap<String, Set<Integer>> ipAddressesWithOpenPorts = new HashMap<>();
         eventManager.registerHandler(TcpIpPortFoundEvent.class, event -> {
             if (event instanceof TcpIpPortFoundEvent tcpIpPortFoundEvent) {
@@ -33,12 +37,23 @@ public class Demo {
                 ipAddressesWithOpenPorts.get(ipAddress).add(tcpIpPort);
             }
         });
+        HashMap<String, String> ipAddressesWithMacAddress = new HashMap<>();
+        eventManager.registerHandler(MacFoundEvent.class, event -> {
+            if (event instanceof MacFoundEvent macFoundEvent) {
+                String ipAddress = macFoundEvent.getIpAddress();
+                String macAddress = macFoundEvent.getMacAddress();
+                LOGGER.info("Found MAC address '{}' on IP address '{}'.", macAddress, ipAddress);
+                ipAddressesWithMacAddress.replace(ipAddress, macAddress);
+            }
+        });
         eventManager.registerHandler(IpAddressFoundEvent.class, event -> {
             if (event instanceof IpAddressFoundEvent ipAddressFoundEvent) {
                 String ipAddress = ipAddressFoundEvent.getIpAddress();
                 LOGGER.info("Found IP address '{}', will scan for open TCP/IP ports.", ipAddress);
                 ipAddressesWithOpenPorts.put(ipAddress, new HashSet<>());
+                ipAddressesWithMacAddress.put(ipAddress, null);
                 portScanner.scan(ipAddress);
+                macScanner.scan(ipAddress);
             }
         });
 
@@ -47,7 +62,8 @@ public class Demo {
         LOGGER.info("\n=============================================================\n");
         ipScanner.scan(new IpScannerInput("192.168.1.0", amountOfIpsToScan));
         LOGGER.info("\n=============================================================\n");
-        LOGGER.info("SUMMARY (<IP>: <Ports>)");
+        LOGGER.info("SUMMARY");
+        LOGGER.info("(<IP>: <Ports>)");
         ipAddressesWithOpenPorts.forEach(
                 (ipAddress, openPorts) -> LOGGER.info(
                         "{}: {}",
@@ -56,6 +72,18 @@ public class Demo {
                                 .map(String::valueOf)
                                 .collect(Collectors.joining(", "))
                 )
+        );
+        LOGGER.info("(<IP>: <MAC>)");
+        ipAddressesWithMacAddress.forEach(
+                (ipAddress, macAddress) -> {
+                    if (macAddress != null) {
+                        LOGGER.info(
+                                "{}: {}",
+                                ipAddress,
+                                macAddress
+                        );
+                    }
+                }
         );
     }
 

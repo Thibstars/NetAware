@@ -27,7 +27,7 @@ public class IpScanner implements Scanner<IpScannerInput> {
     private final EventManager eventManager;
 
     public IpScanner(EventManager eventManager) {
-        this.eventManager = eventManager;
+        this.eventManager = eventManager != null ? eventManager : new EventManager();
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
         LOGGER.info("IpScanner is allocating {} threads.", optimalAmountOfThreads);
@@ -49,7 +49,8 @@ public class IpScanner implements Scanner<IpScannerInput> {
                     try {
                         InetAddress inAddress = InetAddress.getByName(ip);
                         if (inAddress.isReachable(TIMEOUT)) {
-                            createAndFireIpAddressFoundEvent(ip);
+                            IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this, ip);
+                            eventManager.dispatch(ipAddressFoundEvent);
                         }
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
@@ -63,11 +64,6 @@ public class IpScanner implements Scanner<IpScannerInput> {
                 LOGGER.error(e.getMessage(), e);
             }
         }
-    }
-
-    public void createAndFireIpAddressFoundEvent(String ipAddress) {
-        IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this, ipAddress);
-        eventManager.dispatch(ipAddressFoundEvent);
     }
 
 }
