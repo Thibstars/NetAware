@@ -29,6 +29,6 @@ public abstract class Event {
     }
 
     public void fire() {
-        eventListeners.forEach(eventListener -> eventListener.eventFired(this));
+        eventListeners.forEach(eventListener -> eventListener.onEvent(this));
     }
 }

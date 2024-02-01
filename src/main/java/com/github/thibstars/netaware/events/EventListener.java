@@ -5,5 +5,5 @@ package com.github.thibstars.netaware.events;
  */
 public interface EventListener<T extends Event> {
 
-    void eventFired(T event);
+    void onEvent(T event);
 }
