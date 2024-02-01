@@ -1,4 +1,4 @@
-package com.github.thibstars.netaware.events;
+package com.github.thibstars.netaware.events.core;
 
 /**
  * @author Thibault Helsmoortel

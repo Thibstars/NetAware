@@ -1,6 +1,6 @@
 package com.github.thibstars.netaware;
 
-import com.github.thibstars.netaware.events.EventManager;
+import com.github.thibstars.netaware.events.core.EventManager;
 import com.github.thibstars.netaware.events.IpAddressFoundEvent;
 import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.scanners.IpScanner;

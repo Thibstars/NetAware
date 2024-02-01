@@ -1,4 +1,4 @@
-package com.github.thibstars.netaware.events;
+package com.github.thibstars.netaware.events.core;
 
 import java.util.HashMap;
 import java.util.HashSet;
