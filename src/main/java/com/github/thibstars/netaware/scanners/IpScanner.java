@@ -1,13 +1,10 @@
 package com.github.thibstars.netaware.scanners;
 
-import com.github.thibstars.netaware.events.Event;
-import com.github.thibstars.netaware.events.EventListener;
+import com.github.thibstars.netaware.events.EventManager;
 import com.github.thibstars.netaware.events.IpAddressFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,9 +24,10 @@ public class IpScanner implements Scanner<IpScannerInput> {
     public static final double TARGET_CPU_UTILISATION = 0.9;
     private final int optimalAmountOfThreads;
 
-    private final Set<EventListener<Event>> eventListeners = new HashSet<>();
+    private final EventManager eventManager;
 
-    public IpScanner() {
+    public IpScanner(EventManager eventManager) {
+        this.eventManager = eventManager;
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
         LOGGER.info("IpScanner is allocating {} threads.", optimalAmountOfThreads);
@@ -67,20 +65,9 @@ public class IpScanner implements Scanner<IpScannerInput> {
         }
     }
 
-    @Override
-    public void addEventListener(EventListener<Event> eventListener) {
-        this.eventListeners.add(eventListener);
-    }
-
-    @Override
-    public void removeEventListener(EventListener<Event> eventListener) {
-        this.eventListeners.remove(eventListener);
-    }
-
     public void createAndFireIpAddressFoundEvent(String ipAddress) {
         IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this, ipAddress);
-        eventListeners.forEach(ipAddressFoundEvent::addListener);
-        ipAddressFoundEvent.fire();
+        eventManager.dispatch(ipAddressFoundEvent);
     }
 
 }

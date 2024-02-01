@@ -1,14 +1,11 @@
 package com.github.thibstars.netaware.scanners;
 
-import com.github.thibstars.netaware.events.Event;
-import com.github.thibstars.netaware.events.EventListener;
+import com.github.thibstars.netaware.events.EventManager;
 import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -30,9 +27,10 @@ public class PortScanner implements Scanner<String> {
 
     private final int optimalAmountOfThreads;
 
-    private final Set<EventListener<Event>> eventListeners = new HashSet<>();
+    private final EventManager eventManager;
 
-    public PortScanner() {
+    public PortScanner(EventManager eventManager) {
+        this.eventManager = eventManager;
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
         optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
         LOGGER.info("PortScanner is allocating {} threads.", optimalAmountOfThreads);
@@ -64,20 +62,9 @@ public class PortScanner implements Scanner<String> {
         }
     }
 
-    @Override
-    public void addEventListener(EventListener<Event> eventListener) {
-        this.eventListeners.add(eventListener);
-    }
-
-    @Override
-    public void removeEventListener(EventListener<Event> eventListener) {
-        this.eventListeners.remove(eventListener);
-    }
-
     public void createAndFireTcpIpPortFoundEvent(PortScanner portScanner, String ip, Integer tcpIpPort) {
         TcpIpPortFoundEvent tcpIpPortFoundEvent = new TcpIpPortFoundEvent(portScanner, ip, tcpIpPort);
-        eventListeners.forEach(tcpIpPortFoundEvent::addListener);
-        tcpIpPortFoundEvent.fire();
+        eventManager.dispatch(tcpIpPortFoundEvent);
     }
 
 }
