@@ -1,11 +1,10 @@
 package com.github.thibstars.netaware.scanners;
 
-
 /**
  * @author Thibault Helsmoortel
  */
-public interface Scanner<I> {
+public interface StopableScanner<I> extends Scanner<I> {
 
-    void scan(I input);
+    void stop(I input);
 
 }

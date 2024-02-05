@@ -58,10 +58,11 @@ public class Demo {
             }
         });
 
+        String firstIpInTheNetwork = "192.168.1.0";
         int amountOfIpsToScan = 254;
         LOGGER.info("Scanning {} IPs...", amountOfIpsToScan);
         LOGGER.info("\n=============================================================\n");
-        ipScanner.scan(new IpScannerInput("192.168.1.0", amountOfIpsToScan));
+        ipScanner.scan(new IpScannerInput(firstIpInTheNetwork, amountOfIpsToScan));
         LOGGER.info("\n=============================================================\n");
         LOGGER.info("SUMMARY");
         LOGGER.info("(<IP>: <Ports>)");

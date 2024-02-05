@@ -4,19 +4,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thibault Helsmoortel
  */
 public class EventManager {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
+
     private final Map<Class<? extends Event>, Set<EventHandler<? extends Event>>> eventListeners = new HashMap<>();
 
     public <E extends Event> void registerHandler(Class<E> eventType, EventHandler<E> eventHandler) {
+        LOGGER.info("Registering handler for type {}", eventType.getSimpleName());
         Set<EventHandler<? extends Event>> listeners = this.eventListeners.get(eventType);
 
         if (listeners == null) {
-            HashSet<EventHandler<? extends Event>> newListeners = new HashSet<>();
+            Set<EventHandler<? extends Event>> newListeners = new HashSet<>();
             this.eventListeners.put(eventType, newListeners);
             newListeners.add(eventHandler);
         } else {
@@ -25,6 +30,7 @@ public class EventManager {
     }
 
     public <E extends Event> void removeHandler(Class<E> eventType, EventHandler<E> eventHandler) {
+        LOGGER.info("Removing handler for type {}", eventType.getSimpleName());
         Set<EventHandler<? extends Event>> listeners = this.eventListeners.get(eventType);
 
         if (listeners != null) {
@@ -33,6 +39,7 @@ public class EventManager {
     }
 
     public <E extends Event> void removeAllHandlers(Class<E> eventType) {
+        LOGGER.info("Removing all handlers for type {}", eventType.getSimpleName());
         this.eventListeners.remove(eventType);
     }
 

@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +17,11 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thibault Helsmoortel
  */
-public class PortScanner implements Scanner<InetAddress> {
+public class PortScanner implements StopableScanner<InetAddress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PortScanner.class);
+
+    private static final HashMap<InetAddress, ExecutorService> EXECUTORS = new HashMap<>();
 
     private static final int TIMEOUT = 200;
     private static final long SERVICE_TIME = 10L; // 10 ms should be enough just to connect to a port
@@ -40,6 +42,7 @@ public class PortScanner implements Scanner<InetAddress> {
     @Override
     public void scan(InetAddress ip) {
         try (ExecutorService executorService = Executors.newFixedThreadPool(optimalAmountOfThreads)) {
+            EXECUTORS.put(ip, executorService);
             AtomicInteger port = new AtomicInteger(0);
             while (port.get() < MAXIMUM_IPV4_TCP_IP_PORT_NUMBER) {
                 final int currentPort = port.getAndIncrement();
@@ -56,11 +59,16 @@ public class PortScanner implements Scanner<InetAddress> {
                 });
             }
             executorService.shutdown();
-            try {
-                executorService.awaitTermination(10, TimeUnit.MINUTES);
-            } catch (InterruptedException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
+        }
+    }
+
+    @Override
+    public void stop(InetAddress inetAddress) {
+        LOGGER.info("Stopping scan for {}", inetAddress.getHostAddress());
+        ExecutorService executorService = EXECUTORS.get(inetAddress);
+        if (executorService != null) {
+            executorService.shutdownNow();
+            EXECUTORS.remove(inetAddress);
         }
     }
 

@@ -18,9 +18,10 @@ import io.cucumber.java.en.When;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +42,14 @@ public class ScanDefinitions {
         EVENT_MANAGER.removeAllHandlers(IpScannerEvent.class);
         EVENT_MANAGER.removeAllHandlers(PortScannerEvent.class);
         EVENT_MANAGER.removeAllHandlers(MacScannerEvent.class);
+    }
+
+    @Given("scans will stop after one result is found")
+    public void stopScansAfterOneResultIsFound() {
+        EventHandler<IpAddressFoundEvent> ipAddressFoundEventEventHandler = event -> ((IpScanner) event.getSource()).stop(event.getIpScannerInput());
+        EVENT_MANAGER.registerHandler(IpAddressFoundEvent.class, ipAddressFoundEventEventHandler);
+        EventHandler<TcpIpPortFoundEvent> tcpIpPortFoundEventEventHandler = event -> ((PortScanner) event.getSource()).stop(event.getIpAddress());
+        EVENT_MANAGER.registerHandler(TcpIpPortFoundEvent.class, tcpIpPortFoundEventEventHandler);
     }
 
     @When("starting a full scan for ip {string}")
@@ -77,36 +86,40 @@ public class ScanDefinitions {
                 LOGGER.info("Found IP address '{}', will scan for open ports and MAC.", ipAddress.getHostAddress());
                 IP_ADDRESSES_WITH_OPEN_PORTS.put(ipAddress, new HashSet<>());
                 IP_ADDRESSES_WITH_MAC_ADDRESS.put(ipAddress, null);
-                portScanner.scan(ipAddress);
                 macScanner.scan(ipAddress);
+                portScanner.scan(ipAddress);
             }
         });
 
         ipScanner.scan(new IpScannerInput(ipToScan, amountOfIpsToScan));
     }
 
-    @Then("wait until a full result is found")
-    public void waitUntilAFullResultIsFound() throws InterruptedException {
-        AtomicBoolean openPortFound = new AtomicBoolean(false);
-        AtomicBoolean macAddressFound = new AtomicBoolean(false);
-        EventHandler<IpAddressFoundEvent> ipAddressFoundEventEventHandler = event -> ((IpScanner) event.getSource()).stopScan(event.getIpScannerInput());
-        EVENT_MANAGER.registerHandler(IpAddressFoundEvent.class, ipAddressFoundEventEventHandler);
-        EventHandler<TcpIpPortFoundEvent> tcpIpPortFoundEventEventHandler = event -> {
-            openPortFound.set(true);
-            ((PortScanner) event.getSource()).stopScan(event.getIpAddress());
-        };
-        EVENT_MANAGER.registerHandler(TcpIpPortFoundEvent.class, tcpIpPortFoundEventEventHandler);
-        EventHandler<MacFoundEvent> macAddressFoundEventEventHandler = event -> macAddressFound.set(true);
-        EVENT_MANAGER.registerHandler(MacFoundEvent.class, macAddressFoundEventEventHandler);
-
+    @Then("wait for a MAC address to be found")
+    public void waitForAMACAddressToBeFound() throws InterruptedException {
         int checks = 0;
-        do {
-            LOGGER.info("Attempt {} to check if we've got a full result.", checks);
+        while (!hasFoundAMacAddress() && checks < 20) {
+            LOGGER.info("Attempt {} of checking MAC address.", checks + 1);
             Thread.sleep(500);
             checks++;
-        } while (!openPortFound.get() && !macAddressFound.get());
+        }
 
-        LOGGER.info("Check successful.");
+        if (!hasFoundAMacAddress()) {
+            Assertions.fail("No MAC address found.");
+        }
+    }
+
+    private static boolean hasFoundAMacAddress() {
+        return !IP_ADDRESSES_WITH_MAC_ADDRESS.values()
+                .stream()
+                .filter(Objects::nonNull)
+                .toList()
+                .isEmpty();
+    }
+
+    @Then("print scan results")
+    public void printScanResults() {
+        LOGGER.info("Results:");
+        LOGGER.info("IP: Ports");
         IP_ADDRESSES_WITH_OPEN_PORTS.forEach(
                 (ipAddress, openPorts) -> LOGGER.info(
                         "{}: {}",
@@ -116,6 +129,7 @@ public class ScanDefinitions {
                                 .collect(Collectors.joining(", "))
                 )
         );
+        LOGGER.info("IP: MAC");
         IP_ADDRESSES_WITH_MAC_ADDRESS.forEach(
                 (ipAddress, macAddress) -> {
                     if (macAddress != null) {
@@ -127,9 +141,5 @@ public class ScanDefinitions {
                     }
                 }
         );
-
-        EVENT_MANAGER.removeHandler(IpAddressFoundEvent.class, ipAddressFoundEventEventHandler);
-        EVENT_MANAGER.removeHandler(TcpIpPortFoundEvent.class, tcpIpPortFoundEventEventHandler);
-        EVENT_MANAGER.removeHandler(MacFoundEvent.class, macAddressFoundEventEventHandler);
     }
 }
