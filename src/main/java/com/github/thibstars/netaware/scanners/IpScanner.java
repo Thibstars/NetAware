@@ -1,7 +1,7 @@
 package com.github.thibstars.netaware.scanners;
 
-import com.github.thibstars.netaware.events.core.EventManager;
 import com.github.thibstars.netaware.events.IpAddressFoundEvent;
+import com.github.thibstars.netaware.events.core.EventManager;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -49,7 +49,7 @@ public class IpScanner implements Scanner<IpScannerInput> {
                     try {
                         InetAddress ipAddress = InetAddress.getByName(ip);
                         if (ipAddress.isReachable(TIMEOUT)) {
-                            IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this, ipAddress);
+                            IpAddressFoundEvent ipAddressFoundEvent = new IpAddressFoundEvent(this, ipScannerInput, ipAddress);
                             eventManager.dispatch(ipAddressFoundEvent);
                         }
                     } catch (IOException e) {

@@ -8,4 +8,6 @@ public interface Scanner<I> {
 
     void scan(I input);
 
+    //void stopScan(I input);
+
 }
