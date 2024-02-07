@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class IpScanner implements StopableScanner<IpScannerInput> {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(IpScanner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IpScanner.class);
 
     private static final HashMap<IpScannerInput, ExecutorService> EXECUTORS = new HashMap<>();
 
