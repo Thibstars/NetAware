@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Scanner searching for open TCP/IP ports on an IP address.
+ *
  * @author Thibault Helsmoortel
  */
 public class PortScanner implements StopableScanner<InetAddress> {

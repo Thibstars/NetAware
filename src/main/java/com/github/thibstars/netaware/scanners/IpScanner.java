@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Scanner searching for reachable IPs in the network.
+ *
  * @author Thibault Helsmoortel
  */
 public class IpScanner implements StopableScanner<IpScannerInput> {
@@ -20,7 +22,6 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
     private static final Logger LOGGER = LoggerFactory.getLogger(IpScanner.class);
 
     private static final HashMap<IpScannerInput, ExecutorService> EXECUTORS = new HashMap<>();
-
 
     private static final int TIMEOUT = 500;
     private static final long SERVICE_TIME = 1L; // 1 ms should be enough just to add an IP to a set

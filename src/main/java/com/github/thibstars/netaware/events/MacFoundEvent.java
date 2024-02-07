@@ -4,6 +4,8 @@ import com.github.thibstars.netaware.scanners.MacScanner;
 import java.net.InetAddress;
 
 /**
+ * Event to be dispatched when a MAC address is found.
+ *
  * @author Thibault Helsmoortel
  */
 public class MacFoundEvent extends MacScannerEvent {

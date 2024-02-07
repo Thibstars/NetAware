@@ -5,6 +5,8 @@ import com.github.thibstars.netaware.scanners.IpScannerInput;
 import java.net.InetAddress;
 
 /**
+ * Event to be dispatched when an ip address is found.
+ *
  * @author Thibault Helsmoortel
  */
 public class IpAddressFoundEvent extends IpScannerEvent {
@@ -12,7 +14,6 @@ public class IpAddressFoundEvent extends IpScannerEvent {
     private final IpScannerInput ipScannerInput;
 
     private final InetAddress ipAddress;
-
 
     public IpAddressFoundEvent(IpScanner source, IpScannerInput ipScannerInput, InetAddress ipAddress) {
         super(source);

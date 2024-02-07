@@ -1,6 +1,8 @@
 package com.github.thibstars.netaware.scanners;
 
 /**
+ * Input required to start an IP scan.
+ *
  * @author Thibault Helsmoortel
  */
 public record IpScannerInput(

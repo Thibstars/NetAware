@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Scanner searching for the MAC Address linked to an IP Address.
+ *
  * @author Thibault Helsmoortel
  */
 public class MacScanner implements Scanner<InetAddress> {

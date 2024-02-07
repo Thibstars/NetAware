@@ -4,6 +4,8 @@ import com.github.thibstars.netaware.scanners.PortScanner;
 import java.net.InetAddress;
 
 /**
+ * Event to be dispatched when a TCP/IP port is found.
+ *
  * @author Thibault Helsmoortel
  */
 public class TcpIpPortFoundEvent extends PortScannerEvent {
