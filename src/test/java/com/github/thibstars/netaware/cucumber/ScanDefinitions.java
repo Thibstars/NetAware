@@ -1,4 +1,4 @@
-package com.github.thibstars.netaware;
+package com.github.thibstars.netaware.cucumber;
 
 import com.github.thibstars.netaware.events.IpAddressFoundEvent;
 import com.github.thibstars.netaware.events.IpScannerEvent;

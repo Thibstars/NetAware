@@ -1,5 +1,6 @@
 package com.github.thibstars.netaware.utils;
 
+import com.github.thibstars.netaware.exceptions.TargetCpuUtilisationOutOfBoundsException;
 
 /**
  * @author Thibault Helsmoortel
@@ -17,7 +18,7 @@ public class OptimalThreadPoolSizeCalculator {
         int availableCores = Runtime.getRuntime().availableProcessors();
 
         if (targetCpuUtilisation < MIN_TARGET_CPU_UTILISATION || targetCpuUtilisation > MAX_TARGET_CPU_UTILISATION) {
-            throw new IllegalArgumentException("Target CPU utilisation must be a value [0..1].");
+            throw new TargetCpuUtilisationOutOfBoundsException();
         }
 
         return (int) (availableCores * targetCpuUtilisation * (1 + (double) waitTime / serviceTime));
