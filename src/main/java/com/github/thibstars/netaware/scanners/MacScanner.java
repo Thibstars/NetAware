@@ -1,6 +1,10 @@
 package com.github.thibstars.netaware.scanners;
 
 import com.github.thibstars.netaware.events.MacFoundEvent;
+import com.github.thibstars.netaware.events.ScanCompletedEvent;
+import com.github.thibstars.netaware.events.ScanJobCompletedEvent;
+import com.github.thibstars.netaware.events.ScanJobStartedEvent;
+import com.github.thibstars.netaware.events.ScanStartedEvent;
 import com.github.thibstars.netaware.events.core.EventManager;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -25,6 +29,9 @@ public class MacScanner implements Scanner<InetAddress> {
     @Override
     public void scan(InetAddress ip) {
         try {
+            eventManager.dispatch(new ScanStartedEvent<>(this));
+
+            eventManager.dispatch(new ScanJobStartedEvent<>(this));
             NetworkInterface networkInterface = NetworkInterface.getByInetAddress(ip);
             if (networkInterface != null) {
                 String macAddress = getMacAddressFromBytes(networkInterface.getHardwareAddress());
@@ -34,6 +41,10 @@ public class MacScanner implements Scanner<InetAddress> {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+
+        eventManager.dispatch(new ScanJobCompletedEvent<>(this));
+
+        eventManager.dispatch(new ScanCompletedEvent<>(this));
     }
 
     private String getMacAddressFromBytes(byte[] hardwareAddress) {

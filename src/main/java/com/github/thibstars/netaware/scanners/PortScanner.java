@@ -1,5 +1,9 @@
 package com.github.thibstars.netaware.scanners;
 
+import com.github.thibstars.netaware.events.ScanCompletedEvent;
+import com.github.thibstars.netaware.events.ScanJobCompletedEvent;
+import com.github.thibstars.netaware.events.ScanJobStartedEvent;
+import com.github.thibstars.netaware.events.ScanStartedEvent;
 import com.github.thibstars.netaware.events.TcpIpPortFoundEvent;
 import com.github.thibstars.netaware.events.core.EventManager;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
@@ -43,12 +47,16 @@ public class PortScanner implements StopableScanner<InetAddress> {
 
     @Override
     public void scan(InetAddress ip) {
+        eventManager.dispatch(new ScanStartedEvent<>(this));
+
         try (ExecutorService executorService = Executors.newFixedThreadPool(optimalAmountOfThreads)) {
             EXECUTORS.put(ip, executorService);
             AtomicInteger port = new AtomicInteger(0);
             while (port.get() < MAXIMUM_IPV4_TCP_IP_PORT_NUMBER) {
                 final int currentPort = port.getAndIncrement();
                 executorService.submit(() -> {
+                    eventManager.dispatch(new ScanJobStartedEvent<>(this));
+
                     try {
                         Socket socket = new Socket();
                         socket.connect(new InetSocketAddress(ip, currentPort), TIMEOUT);
@@ -58,8 +66,12 @@ public class PortScanner implements StopableScanner<InetAddress> {
                     } catch (IOException e) {
                         // Do nothing, we can't connect, so we are not interested in the port
                     }
+
+                    eventManager.dispatch(new ScanJobCompletedEvent<>(this));
                 });
             }
+
+            executorService.submit(() -> eventManager.dispatch(new ScanCompletedEvent<>(this)));
             executorService.shutdown();
         }
     }
@@ -70,6 +82,7 @@ public class PortScanner implements StopableScanner<InetAddress> {
         ExecutorService executorService = EXECUTORS.get(inetAddress);
         if (executorService != null) {
             executorService.shutdownNow();
+            eventManager.dispatch(new ScanCompletedEvent<>(this));
             EXECUTORS.remove(inetAddress);
         }
     }

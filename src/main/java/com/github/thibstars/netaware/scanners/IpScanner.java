@@ -1,5 +1,9 @@
 package com.github.thibstars.netaware.scanners;
 
+import com.github.thibstars.netaware.events.ScanCompletedEvent;
+import com.github.thibstars.netaware.events.ScanJobCompletedEvent;
+import com.github.thibstars.netaware.events.ScanJobStartedEvent;
+import com.github.thibstars.netaware.events.ScanStartedEvent;
 import com.github.thibstars.netaware.events.core.EventManager;
 import com.github.thibstars.netaware.events.IpAddressFoundEvent;
 import com.github.thibstars.netaware.utils.OptimalThreadPoolSizeCalculator;
@@ -42,6 +46,8 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
         int actualThreadsToUse = Math.min(ipScannerInput.amountOfIpsToScan(), optimalAmountOfThreads);
         LOGGER.info("We need to scan {} ips, actually using {} threads.", ipScannerInput.amountOfIpsToScan(), actualThreadsToUse);
 
+        eventManager.dispatch(new ScanStartedEvent<>(this));
+
         try (ExecutorService executorService = Executors.newFixedThreadPool(actualThreadsToUse)) {
             final String networkId = ipScannerInput.firstIpInTheNetwork()
                     .substring(0, ipScannerInput.firstIpInTheNetwork().length() - 1);
@@ -50,6 +56,8 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
             while (ips.get() <= ipScannerInput.amountOfIpsToScan()) {
                 String ip = networkId + ips.getAndIncrement();
                 executorService.submit(() -> {
+                    eventManager.dispatch(new ScanJobStartedEvent<>(this));
+
                     try {
                         InetAddress ipAddress = InetAddress.getByName(ip);
                         if (ipAddress.isReachable(TIMEOUT)) {
@@ -59,8 +67,11 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
                     }
+
+                    eventManager.dispatch(new ScanJobCompletedEvent<>(this));
                 });
             }
+            executorService.submit(() -> eventManager.dispatch(new ScanCompletedEvent<>(this)));
             executorService.shutdown();
         }
     }
@@ -71,6 +82,7 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
         ExecutorService executorService = EXECUTORS.get(input);
         if (executorService != null) {
             executorService.shutdownNow();
+            eventManager.dispatch(new ScanCompletedEvent<>(this));
             EXECUTORS.remove(input);
         }
     }
