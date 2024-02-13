@@ -19,6 +19,14 @@ Include the dependency in the `dependencies` tag in your pom file (create a prop
 </dependency>
 ````
 
+Make sure to add the repository to the `repositories` tag.
+````xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+````
+
 ## Usage
 ### Using an `EventManager`
 The library will dispatch different events throughout its lifecycle.
