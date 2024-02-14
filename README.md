@@ -72,7 +72,7 @@ ipScanner.scan(new IpScannerInput(firstIpInTheNetwork, amountOfIpsToScan));
 ````
 
 The library comes with different scanners.
-These include main events:
+These include main scanners:
 - `IpScanner`
 - `PortScanner`
 - `MacScanner`
@@ -81,6 +81,8 @@ Find them all in the `com.github.thibstars.netaware.scanners` package.
 
 ## Demo
 Looking for a quick demo? Play around with this sample code to discover IP addresses along with open TCP/IP ports and MAC addresses on your local network.
+
+If you prefer to look at a GUI demo; head over to [NetAwareDesktop](https://github.com/Thibstars/NetAwareDesktop).
 
 ````java
 public class Demo {
