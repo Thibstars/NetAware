@@ -1,4 +1,4 @@
-# NetAware
+# NetAware [![](https://jitpack.io/v/Thibstars/netaware.svg)](https://jitpack.io/#Thibstars/netaware)
 Java library able to scan networks.
 
 Using an event-based approach, you can discover elements on your local network including:
