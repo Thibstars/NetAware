@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,22 +35,29 @@ public class PortScanner implements StopableScanner<InetAddress> {
     public static final double TARGET_CPU_UTILISATION = 0.9;
     private static final int MAXIMUM_IPV4_TCP_IP_PORT_NUMBER = 65535;
 
-    private final int optimalAmountOfThreads;
+    private final int amountOfThreadsToUse;
 
     private final EventManager eventManager;
 
     public PortScanner(EventManager eventManager) {
         this.eventManager = eventManager != null ? eventManager : new EventManager();
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
-        optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
-        LOGGER.info("PortScanner is allocating {} threads.", optimalAmountOfThreads);
+        this.amountOfThreadsToUse = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
+        LOGGER.info("PortScanner is allocating {} threads.", amountOfThreadsToUse);
+    }
+
+    public PortScanner(EventManager eventManager, int amountOfThreads) {
+        Validate.isTrue(amountOfThreads > 0, "The amount of threads must be greater than 0.");
+        this.eventManager = eventManager != null ? eventManager : new EventManager();
+        this.amountOfThreadsToUse = amountOfThreads;
+        LOGGER.info("PortScanner is allocating {} threads.", amountOfThreadsToUse);
     }
 
     @Override
     public void scan(InetAddress ip) {
         eventManager.dispatch(new ScanStartedEvent<>(this));
 
-        try (ExecutorService executorService = Executors.newFixedThreadPool(optimalAmountOfThreads)) {
+        try (ExecutorService executorService = Executors.newFixedThreadPool(amountOfThreadsToUse)) {
             EXECUTORS.put(ip, executorService);
             AtomicInteger port = new AtomicInteger(0);
             while (port.get() < MAXIMUM_IPV4_TCP_IP_PORT_NUMBER) {

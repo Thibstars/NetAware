@@ -19,6 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <logback-classic.version>1.5.18</logback-classic.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
 
         <junit-jupiter.version>5.13.1</junit-jupiter.version>
         <junit-platform-suite.version>1.13.1</junit-platform-suite.version>
@@ -30,6 +31,11 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback-classic.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <dependency>
