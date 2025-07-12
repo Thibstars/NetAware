@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,20 +31,27 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
     private static final int TIMEOUT = 500;
     private static final long SERVICE_TIME = 1L; // 1 ms should be enough just to add an IP to a set
     public static final double TARGET_CPU_UTILISATION = 0.9;
-    private final int optimalAmountOfThreads;
+    private final int amountOfThreadsToUse;
 
     private final EventManager eventManager;
 
     public IpScanner(EventManager eventManager) {
         this.eventManager = eventManager != null ? eventManager : new EventManager();
         OptimalThreadPoolSizeCalculator optimalThreadPoolSizeCalculator = new OptimalThreadPoolSizeCalculator();
-        optimalAmountOfThreads = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
-        LOGGER.info("IpScanner is allocating {} threads.", optimalAmountOfThreads);
+        this.amountOfThreadsToUse = optimalThreadPoolSizeCalculator.get(TARGET_CPU_UTILISATION, TIMEOUT, SERVICE_TIME);
+        LOGGER.info("IpScanner is allocating {} threads.", amountOfThreadsToUse);
+    }
+
+    public IpScanner(EventManager eventManager, int amountOfThreads) {
+        Validate.isTrue(amountOfThreads > 0, "The amount of threads must be greater than 0.");
+        this.eventManager = eventManager != null ? eventManager : new EventManager();
+        this.amountOfThreadsToUse = amountOfThreads;
+        LOGGER.info("IpScanner is allocating {} threads.", amountOfThreadsToUse);
     }
 
     @Override
     public void scan(IpScannerInput ipScannerInput) {
-        int actualThreadsToUse = Math.min(ipScannerInput.amountOfIpsToScan(), optimalAmountOfThreads);
+        int actualThreadsToUse = Math.min(ipScannerInput.amountOfIpsToScan(), amountOfThreadsToUse);
         LOGGER.info("We need to scan {} ips, actually using {} threads.", ipScannerInput.amountOfIpsToScan(), actualThreadsToUse);
 
         eventManager.dispatch(new ScanStartedEvent<>(this));
