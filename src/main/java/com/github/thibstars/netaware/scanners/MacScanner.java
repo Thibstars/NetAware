@@ -34,9 +34,14 @@ public class MacScanner implements Scanner<InetAddress> {
             eventManager.dispatch(new ScanJobStartedEvent<>(this));
             NetworkInterface networkInterface = NetworkInterface.getByInetAddress(ip);
             if (networkInterface != null) {
-                String macAddress = getMacAddressFromBytes(networkInterface.getHardwareAddress());
+                byte[] hardwareAddress = networkInterface.getHardwareAddress();
+                if (hardwareAddress != null) {
+                    String macAddress = getMacAddressFromBytes(hardwareAddress);
 
-                eventManager.dispatch(new MacFoundEvent(this, ip, macAddress));
+                    eventManager.dispatch(new MacFoundEvent(this, ip, macAddress));
+                } else {
+                    LOGGER.warn("No hardware address found for {}", ip.getHostAddress());
+                }
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
