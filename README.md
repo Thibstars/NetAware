@@ -6,6 +6,8 @@ Using an event-based approach, you can discover elements on your local network i
 - MAC addresses
 - open TCP/IP ports
 
+<img alt="The NetAware logo." height="125" src="NetAware.png" title="NetAware logo" width="125"/>
+
 ## Installation
 ### Maven
 
