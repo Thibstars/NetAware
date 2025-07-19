@@ -56,7 +56,8 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
 
         eventManager.dispatch(new ScanStartedEvent<>(this));
 
-        try (ExecutorService executorService = Executors.newFixedThreadPool(actualThreadsToUse)) {
+        ExecutorService executorService = Executors.newFixedThreadPool(actualThreadsToUse);
+        try {
             final String networkId = ipScannerInput.firstIpInTheNetwork()
                     .substring(0, ipScannerInput.firstIpInTheNetwork().length() - 1);
 
@@ -80,6 +81,7 @@ public class IpScanner implements StopableScanner<IpScannerInput> {
                 });
             }
             executorService.submit(() -> eventManager.dispatch(new ScanCompletedEvent<>(this)));
+        } finally {
             executorService.shutdown();
         }
     }

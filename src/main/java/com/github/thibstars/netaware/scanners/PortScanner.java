@@ -57,8 +57,9 @@ public class PortScanner implements StopableScanner<InetAddress> {
     public void scan(InetAddress ip) {
         eventManager.dispatch(new ScanStartedEvent<>(this));
 
-        try (ExecutorService executorService = Executors.newFixedThreadPool(amountOfThreadsToUse)) {
-            EXECUTORS.put(ip, executorService);
+        ExecutorService executorService = Executors.newFixedThreadPool(amountOfThreadsToUse);
+        EXECUTORS.put(ip, executorService);
+        try {
             AtomicInteger port = new AtomicInteger(0);
             while (port.get() < MAXIMUM_IPV4_TCP_IP_PORT_NUMBER) {
                 final int currentPort = port.getAndIncrement();
@@ -80,6 +81,7 @@ public class PortScanner implements StopableScanner<InetAddress> {
             }
 
             executorService.submit(() -> eventManager.dispatch(new ScanCompletedEvent<>(this)));
+        } finally {
             executorService.shutdown();
         }
     }

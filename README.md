@@ -45,7 +45,8 @@ Now, we only need to register handlers to perform tasks when events occur:
 eventManager.registerHandler(
         IpAddressFoundEvent.class,
         event -> {
-            if (event instanceof IpAddressFoundEvent ipAddressFoundEvent) {
+            if (event instanceof IpAddressFoundEvent) {
+                IpAddressFoundEvent ipAddressFoundEvent = (IpAddressFoundEvent) event;
                 InetAddress ipAddress = ipAddressFoundEvent.getIpAddress();
                 String hostAddress = ipAddress.getHostAddress();
                 System.out.println("Found IP address: " + hostAddress);
@@ -99,7 +100,8 @@ public class Demo {
 
         HashMap<InetAddress, Set<Integer>> ipAddressesWithOpenPorts = new HashMap<>();
         eventManager.registerHandler(TcpIpPortFoundEvent.class, event -> {
-            if (event instanceof TcpIpPortFoundEvent tcpIpPortFoundEvent) {
+            if (event instanceof TcpIpPortFoundEvent) {
+                TcpIpPortFoundEvent tcpIpPortFoundEvent = (TcpIpPortFoundEvent) event;
                 InetAddress ipAddress = tcpIpPortFoundEvent.getIpAddress();
                 Integer tcpIpPort = tcpIpPortFoundEvent.getTcpIpPort();
                 LOGGER.info("Found open TCP/IP port '{}' on IP address '{}'.", tcpIpPort, ipAddress.getHostAddress());
@@ -108,7 +110,8 @@ public class Demo {
         });
         HashMap<InetAddress, String> ipAddressesWithMacAddress = new HashMap<>();
         eventManager.registerHandler(MacFoundEvent.class, event -> {
-            if (event instanceof MacFoundEvent macFoundEvent) {
+            if (event instanceof MacFoundEvent) {
+                MacFoundEvent macFoundEvent = (MacFoundEvent) event;
                 InetAddress ipAddress = macFoundEvent.getIpAddress();
                 String macAddress = macFoundEvent.getMacAddress();
                 LOGGER.info("Found MAC address '{}' on IP address '{}'.", macAddress, ipAddress.getHostAddress());
@@ -116,7 +119,8 @@ public class Demo {
             }
         });
         eventManager.registerHandler(IpAddressFoundEvent.class, event -> {
-            if (event instanceof IpAddressFoundEvent ipAddressFoundEvent) {
+            if (event instanceof IpAddressFoundEvent) {
+                IpAddressFoundEvent ipAddressFoundEvent = (IpAddressFoundEvent) event;
                 InetAddress ipAddress = ipAddressFoundEvent.getIpAddress();
                 LOGGER.info("Found IP address '{}', will scan for open TCP/IP ports.", ipAddress.getHostAddress());
                 ipAddressesWithOpenPorts.put(ipAddress, new HashSet<>());

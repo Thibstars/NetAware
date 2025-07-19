@@ -64,7 +64,8 @@ public class ScanDefinitions {
         MacScanner macScanner = new MacScanner(EVENT_MANAGER);
 
         EVENT_MANAGER.registerHandler(TcpIpPortFoundEvent.class, event -> {
-            if (event instanceof TcpIpPortFoundEvent tcpIpPortFoundEvent) {
+            if (event instanceof TcpIpPortFoundEvent) {
+                TcpIpPortFoundEvent tcpIpPortFoundEvent = (TcpIpPortFoundEvent) event;
                 InetAddress ipAddress = tcpIpPortFoundEvent.getIpAddress();
                 Integer tcpIpPort = tcpIpPortFoundEvent.getTcpIpPort();
                 LOGGER.info("Found open TCP/IP port '{}' on IP address '{}'.", tcpIpPort, ipAddress.getHostAddress());
@@ -73,7 +74,8 @@ public class ScanDefinitions {
         });
 
         EVENT_MANAGER.registerHandler(MacFoundEvent.class, event -> {
-            if (event instanceof MacFoundEvent macFoundEvent) {
+            if (event instanceof MacFoundEvent) {
+                MacFoundEvent macFoundEvent = (MacFoundEvent) event;
                 InetAddress ipAddress = macFoundEvent.getIpAddress();
                 String macAddress = macFoundEvent.getMacAddress();
                 LOGGER.info("Found MAC address '{}' on IP address '{}'.", macAddress, ipAddress.getHostAddress());
@@ -81,7 +83,8 @@ public class ScanDefinitions {
             }
         });
         EVENT_MANAGER.registerHandler(IpAddressFoundEvent.class, event -> {
-            if (event instanceof IpAddressFoundEvent ipAddressFoundEvent) {
+            if (event instanceof IpAddressFoundEvent) {
+                IpAddressFoundEvent ipAddressFoundEvent = (IpAddressFoundEvent) event;
                 InetAddress ipAddress = ipAddressFoundEvent.getIpAddress();
                 LOGGER.info("Found IP address '{}', will scan for open ports and MAC.", ipAddress.getHostAddress());
                 IP_ADDRESSES_WITH_OPEN_PORTS.put(ipAddress, new HashSet<>());
