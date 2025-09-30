@@ -21,9 +21,9 @@
         <logback-classic.version>1.5.18</logback-classic.version>
         <commons-lang3.version>3.19.0</commons-lang3.version>
 
-        <junit-jupiter.version>5.13.1</junit-jupiter.version>
-        <junit-platform-suite.version>1.13.1</junit-platform-suite.version>
-        <cucumber-java.version>7.23.0</cucumber-java.version>
+        <junit-jupiter.version>6.0.0</junit-jupiter.version>
+        <junit-platform-suite.version>6.0.0</junit-platform-suite.version>
+        <cucumber-java.version>7.29.0</cucumber-java.version>
     </properties>
 
     <dependencies>
