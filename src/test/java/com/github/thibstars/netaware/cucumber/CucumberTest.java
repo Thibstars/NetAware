@@ -1,5 +1,6 @@
 package com.github.thibstars.netaware.cucumber;
 
+import io.cucumber.core.options.Constants;
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
@@ -14,6 +15,7 @@ import org.junit.platform.suite.api.SuiteDisplayName;
 @IncludeEngines("cucumber")
 @SelectClasspathResource("cucumber")
 @ConfigurationParameter(key = io.cucumber.core.options.Constants.PLUGIN_PROPERTY_NAME, value = "pretty")
+@ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "not @test-locally")
 @SuppressWarnings("java:S2187") // No need to add some tests to this class
 public class CucumberTest {
 

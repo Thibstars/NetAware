@@ -1,5 +1,6 @@
 Feature: Perform a full scan
 
+  @test-locally
   Scenario: Perform a full scan
     Given an event manager without listeners
     And scans will stop after one result is found
