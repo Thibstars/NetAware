@@ -6,7 +6,7 @@
 
     <groupId>com.github.thibstars</groupId>
     <artifactId>netaware</artifactId>
-    <version>1.3.1-SNAPSHOT</version>
+    <version>1.3.1</version>
 
     <name>NetAware</name>
     <description>Java library able to scan networks.</description>
