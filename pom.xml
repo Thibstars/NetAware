@@ -23,7 +23,7 @@
 
         <junit-jupiter.version>6.0.1</junit-jupiter.version>
         <junit-platform-suite.version>6.0.1</junit-platform-suite.version>
-        <cucumber-java.version>7.31.0</cucumber-java.version>
+        <cucumber-java.version>7.33.0</cucumber-java.version>
     </properties>
 
     <dependencies>
